@@ -1,0 +1,15 @@
+{
+	"name": "DF-Transition2026",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "31a6124d-e569-40cd-8aeb-ba50cb308628",
+		"tenantId": "a46355be-e7b7-4d86-9e1b-1fe339d30ad2"
+	}
+}
