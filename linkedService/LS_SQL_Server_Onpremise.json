@@ -1,0 +1,21 @@
+{
+	"name": "LS_SQL_Server_Onpremise",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "CHANDRAKANT-TIG\\SQLEXPRESS",
+			"database": "MigrationProject",
+			"encrypt": "optional",
+			"trustServerCertificate": true,
+			"authenticationType": "SQL",
+			"userName": "chandrakant",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJlMTExMWE3MC0zNWM5LTRmYWItOTE4YS02ZDc5ODRiMDUyNGEiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "self-hosted-integrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
