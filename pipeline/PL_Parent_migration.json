@@ -44,7 +44,21 @@
 					"items": {
 						"value": "@activity('DS_Lookup_watermark').output.value",
 						"type": "Expression"
-					}
+					},
+					"activities": [
+						{
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"waitOnCompletion": true
+							}
+						}
+					]
 				}
 			}
 		],
