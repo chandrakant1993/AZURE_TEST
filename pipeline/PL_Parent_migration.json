@@ -47,36 +47,37 @@
 					},
 					"activities": [
 						{
-							"name": "Child_pipeline_invoking",
+							"name": "PL_execute_calling_child",
 							"type": "ExecutePipeline",
 							"dependsOn": [],
 							"policy": {
 								"secureInput": false
 							},
-							"userProperties": [
-								{
-									"name": "[TableSchema]",
-									"value": "@item().TableSchema"
-								},
-								{
-									"name": "TableName",
-									"value": "@item().TableName"
-								},
-								{
-									"name": "WatermarkColumn",
-									"value": "@item().WatermarkColumn"
-								},
-								{
-									"name": "LastLoadValue",
-									"value": "@item().LastLoadValue"
-								}
-							],
+							"userProperties": [],
 							"typeProperties": {
 								"pipeline": {
 									"referenceName": "PL_Child_migration",
 									"type": "PipelineReference"
 								},
-								"waitOnCompletion": true
+								"waitOnCompletion": true,
+								"parameters": {
+									"TableSchema": {
+										"value": "@item().TableSchema",
+										"type": "Expression"
+									},
+									"TableName": {
+										"value": "@item().TableName",
+										"type": "Expression"
+									},
+									"WatermarkColumn": {
+										"value": "@item().WatermarkColumn",
+										"type": "Expression"
+									},
+									"LastLoadValue": {
+										"value": "@item().LastLoadValue",
+										"type": "Expression"
+									}
+								}
 							}
 						}
 					]

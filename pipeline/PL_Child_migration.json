@@ -1,22 +1,163 @@
 {
 	"name": "PL_Child_migration",
 	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_Max_watermark_value",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT MAX(@{pipeline().parameters.WatermarkColumn}) AS MaxValue\nFROM @{pipeline().parameters.TableSchema}.@{pipeline().parameters.TableName}\n",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "SqlServerTable1",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaname": {
+								"value": "@pipeline().parameters.TableSchema",
+								"type": "Expression"
+							},
+							"TableName": {
+								"value": "@pipeline().parameters.TableName",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "If_New_Records_Exists",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Max_watermark_value",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@or(equals(pipeline().parameters.LastLoadValue, null), greater(int(activity('LKUP_MAX_VALUE').output.firstRow.MaxValue), int(pipeline().parameters.LastLoadValue)))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "CopySQL_Full_In_Target",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlServerSource",
+									"sqlReaderQuery": "@concat(\n    'SELECT * FROM ',\n    pipeline().parameters.TableSchema, '.', pipeline().parameters.TableName,\n    if(\n        equals(pipeline().parameters.LastLoadValue, null),\n        '', \n        concat(\n            ' WHERE ', pipeline().parameters.WatermarkColumn,\n            ' > ''', pipeline().parameters.LastLoadValue, ''''\n        )\n    )\n)",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "SqlServerTable1",
+									"type": "DatasetReference",
+									"parameters": {
+										"schemaname": {
+											"value": "@pipeline().parameters.TableSchema",
+											"type": "Expression"
+										},
+										"TableName": {
+											"value": "@pipeline().parameters.TableName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DS_SQL_Table_to_Parquet",
+									"type": "DatasetReference",
+									"parameters": {
+										"TableName": {
+											"value": "@pipeline().parameters.TableName",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Child_Pipeline_Storeprocedure",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "CopySQL_Full_In_Target",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"waitOnCompletion": true
+							}
+						}
+					]
+				}
+			}
+		],
 		"parameters": {
 			"TableSchema": {
-				"type": "string",
-				"defaultValue": "@item().TableSchema"
+				"type": "string"
 			},
 			"TableName": {
-				"type": "string",
-				"defaultValue": "@item().TableName"
+				"type": "string"
 			},
 			"WatermarkColumn": {
-				"type": "string",
-				"defaultValue": "@item().WatermarkColumn"
+				"type": "string"
 			},
 			"LastLoadValue": {
-				"type": "string",
-				"defaultValue": "@item().LastLoadValue"
+				"type": "string"
 			}
 		},
 		"annotations": []
